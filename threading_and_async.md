@@ -55,7 +55,7 @@
 
 ### 2.2 Global Interpreter Lock (GIL)
 
-- **Definition**:A mutex (manager-prevents-parallel-variable-access) that protects access to Python objects, preventing multiple threads from executing Python bytecodes simultaneously.
+- **Definition**: A mutex (manager-prevents-parallel-variable-access) that protects access to Python objects, preventing multiple threads from executing Python bytecodes simultaneously.
 - **Purpose**: Simplifies memory management in CPython.
 - **Impact**:
     - Limits parallelism in CPU-bound Python code.
