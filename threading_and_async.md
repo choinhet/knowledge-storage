@@ -55,7 +55,7 @@
 
 ### 2.2 Global Interpreter Lock (GIL)
 
-- **Definition**: A mutex that protects access to Python objects, preventing multiple threads from executing Python bytecodes simultaneously.
+- **Definition**:A mutex (manager-prevents-parallel-variable-access) that protects access to Python objects, preventing multiple threads from executing Python bytecodes simultaneously.
 - **Purpose**: Simplifies memory management in CPython.
 - **Impact**:
     - Limits parallelism in CPU-bound Python code.
@@ -73,11 +73,11 @@
 import threading
 
 def worker():
-print("Worker thread is running")
+    print("Worker thread is running")
 
-thread = threading.Thread(target=worker)
-thread.start()
-thread.join()  # Wait for the thread to finish
+    thread = threading.Thread(target=worker)
+    thread.start()
+    thread.join()  # Wait for the thread to finish
 ```
 
 **Thread Lifecycle**:
@@ -100,9 +100,9 @@ import threading
 lock = threading.Lock()
 
 def thread_safe_function():
-with lock:
-# Critical section
-pass
+    with lock:
+        # Critical section
+        pass
 ```
 
 ### 3.3 Best Practices with Threads
@@ -156,12 +156,12 @@ pass
 from concurrent.futures import ThreadPoolExecutor
 
 def task(arg):
-# Perform some IO-bound operation
-pass
+    # Perform some IO-bound operation
+    pass
 
 with ThreadPoolExecutor(max_workers=10) as executor:
-futures = [executor.submit(task, arg) for arg in args]
-results = [future.result() for future in futures]
+    futures = [executor.submit(task, arg) for arg in args]
+    results = [future.result() for future in futures]
 ```
 
 ---
@@ -177,18 +177,52 @@ results = [future.result() for future in futures]
     - Declared with `async def`.
     - Use `await` to pause execution and yield control back to the event loop.
 
-**Example**:
+**Example 1**:
 
 ```python
 import asyncio
 
-async def main():
-print('Hello')
-await asyncio.sleep(1)
-print('World')
 
-asyncio.run(main())
+async def main():
+    print('Hello')
+    await asyncio.sleep(1)
+    print('World')
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
+
+**Example 2**
+```python
+import time
+
+# Define a coroutine using a generator
+def coroutine_1():
+    for i in range(3):
+        print(f'Coroutine 1: {i}')
+        yield  # Pause execution
+
+def coroutine_2():
+    for i in range(3):
+        print(f'Coroutine 2: {i}')
+        yield  # Pause execution
+
+# Simple event loop
+def run_coroutines(coroutines):
+    coroutines = list(coroutines)
+    while coroutines:
+        for coro in coroutines:
+            try:
+                next(coro)
+                time.sleep(0.5)  # Simulate waiting for IO
+            except StopIteration:
+                coroutines.remove(coro)
+
+# Run the coroutines
+run_coroutines([coroutine_1(), coroutine_2()])
+```
+
 
 ### 5.2 Asyncio vs. Threading
 
@@ -244,24 +278,26 @@ q.join()
 
 ```python
 import threading
+import time
 
 counter = 0
 lock = threading.Lock()
 
 def increment_counter():
-global counter
-for _ in range(100000):
-with lock:
-counter += 1
+    global counter
+    for _ in range(1000):
+        with lock:  # you can remove this to check race conditions
+            counter += 1
+            time.sleep(0.0001)
 
 threads = []
 for _ in range(5):
-t = threading.Thread(target=increment_counter)
-threads.append(t)
-t.start()
+    t = threading.Thread(target=increment_counter)
+    threads.append(t)
+    t.start()
 
 for t in threads:
-t.join()
+    t.join()
 
 print(f"Final counter value: {counter}")
 ```
